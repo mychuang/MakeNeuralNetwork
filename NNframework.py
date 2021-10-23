@@ -77,18 +77,45 @@ class neuralNetwork:
         finalOutputs = self.activateFunction(finalInputs);
         
         return finalOutputs;
-    
-# ==============================================================
-# Test neural network
-# ==============================================================
 
-inputNodes  = 3
-hiddenNodes = 3
-outputNodes = 3
-learningRate = 0.3
+#%% === import MNIST DATA ===
+from keras.datasets import mnist
 
-model = neuralNetwork(inputNodes, hiddenNodes, outputNodes, learningRate)
-print(model.query([1.0, 0.5, -1.5]))
+(KerasTrainImages, KerasTrainLabels), (KerasTestImages, KerasTestLabels) = \
+                                      mnist.load_data()
+
+#%% === Randomly get test data from MNIST ===
+import numpy as np
+import random
+test50 = np.zeros((50, 28, 28))
+tlab50 = np.zeros(50)
+
+for times in range(50):
+    index = random.randrange(10000)
+    test50[times] = KerasTestImages[index]
+    tlab50[times] = KerasTestLabels[index]
+#%% === Process Data ===
+signals = (test50/255 * 0.99) + 0.01
+targets = np.zeros((50, 10))
+for index in range(len(targets)):
+    targets[index, int(tlab50[index])] = 0.99
+
+#%% plotting check
+import matplotlib.pyplot as plt
+
+fig = plt.figure(figsize=(8,6))
+plt.imshow(signals[0], cmap=plt.cm.gray, interpolation="None")
+plt.title("Plot 2D array")
+
+#%% === NN setting 
+inputNodes   = 784
+hiddenNodes  = 100
+outputNodes  = 10
+learningRate = 0.3 
+
+ 
+
+
 
 
 
