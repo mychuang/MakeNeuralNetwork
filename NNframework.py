@@ -33,7 +33,33 @@ class neuralNetwork:
         pass;
     
     #train NN
-    def train():
+    def train(self, inputsList, targetList):
+        import numpy as np
+        # === calculate signals ====
+        # convert inputs to 2D array
+        inputs  = np.array(inputsList, ndmin=2).T
+        targets = np.array(targetList, ndmin=2).T
+        
+        # clac signal into hidden layer
+        hiddenInputs  = np.dot(self.Wih, inputs);
+        hiddenOutputs = self.activateFunction(hiddenInputs);
+        
+        # calc signal into output layer
+        finalInputs  = np.dot(self.Who, hiddenOutputs);
+        finalOutputs = self.activateFunction(finalInputs);
+        
+        # === claculate error & back propagation ===
+        outputError = targets - finalOutputs;
+        hiddenError   = np.dot(self.Who.T, outputError);
+        
+        # === Update weighting ===
+        self.Who += self.learningRate * \
+            np.dot((outputError * finalOutputs * (1.0-finalOutputs)), \
+                   np.transpose(hiddenOutputs))
+        self.Wih += self.learningRate * \
+            np.dot((hiddenError * hiddenOutputs * (1.0-hiddenOutputs)), \
+                   np.transpose(inputs))
+        
         pass
     
     #query NN
@@ -41,7 +67,6 @@ class neuralNetwork:
         import numpy as np
         # convert inputs to 2D array
         inputs = np.array(inputsList, ndmin=2).T
-        print(inputs)
         
         # inputs to hidden layer
         hiddenInputs  = np.dot(self.Wih, inputs);
@@ -63,7 +88,7 @@ outputNodes = 3
 learningRate = 0.3
 
 model = neuralNetwork(inputNodes, hiddenNodes, outputNodes, learningRate)
-model.query([1.0, 0.5, -1.5]);
+print(model.query([1.0, 0.5, -1.5]))
 
 
 
