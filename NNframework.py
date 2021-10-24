@@ -74,74 +74,71 @@ class neuralNetwork:
         # hidden layer to output
         finalInputs  = np.dot(self.Who, hiddenOutputs);
         finalOutputs = self.activateFunction(finalInputs);
-        
         return finalOutputs;
+        
+    #plotting check
+    def plotSingleImage(self, image, titleWord):
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(8,6))
+        plt.imshow(image, cmap=plt.cm.gray, interpolation="None")
+        plt.title(titleWord)
+
+        pass
+        
 
 #%% === import MNIST DATA ===
 from keras.datasets import mnist
+import numpy as np
 
 (KerasTrainImages, KerasTrainLabels), (KerasTestImages, KerasTestLabels) = \
                                       mnist.load_data()
 
-#%% === get test data from MNIST ===
-import numpy as np
-import random
-
-#%% === Process Data ===
-signals = (KerasTrainImages/255 * 0.99) + 0.01
-targets = np.zeros((60000, 10))
-for index in range(len(targets)):
-    targets[index, int(KerasTrainLabels[index])] = 0.99
-
-#%% plotting check
-#mport matplotlib.pyplot as plt
-
-#fig = plt.figure(figsize=(8,6))
-#plt.imshow(signals[0], cmap=plt.cm.gray, interpolation="None")
-#plt.title("Plot 2D array")
+# === Process Trainning Data ===
+trainSignals = (KerasTrainImages/255 * 0.99) + 0.01
+trainTargets = np.zeros((60000, 10))
+for index in range(len(trainTargets)):
+    trainTargets[index, int(KerasTrainLabels[index])] = 0.99
+# === Process Testing Data ===    
+testSignals = (KerasTestImages/255 * 0.99) + 0.01
+testTargets = np.zeros((10000, 10))
+for index in range(len(testTargets)):
+    testTargets[index, int(KerasTestLabels[index])] = 0.99
 
 #%% The Loop for trainning
+print("Build Neural Network")
 inputNodes   = 784
 hiddenNodes  = 100
 outputNodes  = 10
-learningRate = 0.3
+learningRate = 0.2
+trainScore = np.array([])
 model = neuralNetwork(inputNodes, hiddenNodes, outputNodes, learningRate)
-print(" == Traing ==")
+
+print(" == Training == ")
 for index in range(60000):
-    trainSignal = signals[index].reshape(inputNodes)
-    trainTarget = targets[index]
-    model.train(trainSignal, trainTarget)
-    result = model.query(trainSignal)
-    # Check result
-    #max_value = None
-    #max_index = None
-    #for idx, num in enumerate(result):
-    #    if (max_value is None or num > max_value):
-    #        max_value = num
-    #        max_idx = idx
-    #print('Maximum value:', max_value, "At index: ", max_idx, "target:", tlab1000[index])
+    signal = trainSignals[index].reshape(inputNodes)
+    model.train(signal, trainTargets[index])
+    result = model.query(signal)
+    if(np.argmax(result) == np.argmax(trainTargets[index])):
+        trainScore = np.append(trainScore, 1)
+    else:
+        trainScore = np.append(trainScore, 0)
+print("Trainning Performance: ", trainScore.sum()/float(len(trainScore)))
 
 #%% The loop for testing
 print(" == Testing ==")
-signals = (KerasTestImages/255 * 0.99) + 0.01
-targets = np.zeros((60000, 10))
-for index in range(len(targets)):
-    targets[index, int(KerasTestLabels[index])] = 0.99
+testScore = np.array([])
 
 for index in range(10000):
-    testSignal = signals.reshape(inputNodes)
-    testTarget = targets
-    result = model.query(testSignal)
-    # Check result
-    max_value = None
-    max_index = None
-    for idx, num in enumerate(result):
-        if (max_value is None or num > max_value):
-            max_value = num
-            max_idx = idx
-    print('value:', max_value, "index: ", max_idx, "target:", KerasTestLabels[index])
+    signal = testSignals[index].reshape(inputNodes)
+    result = model.query(signal)
+    if(np.argmax(result) == np.argmax(testTargets[index])):
+        testScore = np.append(testScore, 1)
+    else:
+        testScore = np.append(testScore, 0)
+print("Testing Performance: ", testScore.sum()/float(len(testScore)))   
 
 
+        
 
 
 
