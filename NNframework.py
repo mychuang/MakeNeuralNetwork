@@ -59,7 +59,6 @@ class neuralNetwork:
         self.Wih += self.learningRate * \
             np.dot((hiddenError * hiddenOutputs * (1.0-hiddenOutputs)), \
                    np.transpose(inputs))
-        
         pass
     
     #query NN
@@ -84,36 +83,64 @@ from keras.datasets import mnist
 (KerasTrainImages, KerasTrainLabels), (KerasTestImages, KerasTestLabels) = \
                                       mnist.load_data()
 
-#%% === Randomly get test data from MNIST ===
+#%% === get test data from MNIST ===
 import numpy as np
 import random
-test50 = np.zeros((50, 28, 28))
-tlab50 = np.zeros(50)
 
-for times in range(50):
-    index = random.randrange(10000)
-    test50[times] = KerasTestImages[index]
-    tlab50[times] = KerasTestLabels[index]
 #%% === Process Data ===
-signals = (test50/255 * 0.99) + 0.01
-targets = np.zeros((50, 10))
+signals = (KerasTrainImages/255 * 0.99) + 0.01
+targets = np.zeros((60000, 10))
 for index in range(len(targets)):
-    targets[index, int(tlab50[index])] = 0.99
+    targets[index, int(KerasTrainLabels[index])] = 0.99
 
 #%% plotting check
-import matplotlib.pyplot as plt
+#mport matplotlib.pyplot as plt
 
-fig = plt.figure(figsize=(8,6))
-plt.imshow(signals[0], cmap=plt.cm.gray, interpolation="None")
-plt.title("Plot 2D array")
+#fig = plt.figure(figsize=(8,6))
+#plt.imshow(signals[0], cmap=plt.cm.gray, interpolation="None")
+#plt.title("Plot 2D array")
 
-#%% === NN setting 
+#%% The Loop for trainning
 inputNodes   = 784
 hiddenNodes  = 100
 outputNodes  = 10
-learningRate = 0.3 
+learningRate = 0.3
+model = neuralNetwork(inputNodes, hiddenNodes, outputNodes, learningRate)
+print(" == Traing ==")
+for index in range(60000):
+    trainSignal = signals[index].reshape(inputNodes)
+    trainTarget = targets[index]
+    model.train(trainSignal, trainTarget)
+    result = model.query(trainSignal)
+    # Check result
+    #max_value = None
+    #max_index = None
+    #for idx, num in enumerate(result):
+    #    if (max_value is None or num > max_value):
+    #        max_value = num
+    #        max_idx = idx
+    #print('Maximum value:', max_value, "At index: ", max_idx, "target:", tlab1000[index])
 
- 
+#%% The loop for testing
+print(" == Testing ==")
+signals = (KerasTestImages/255 * 0.99) + 0.01
+targets = np.zeros((60000, 10))
+for index in range(len(targets)):
+    targets[index, int(KerasTestLabels[index])] = 0.99
+
+for index in range(10000):
+    testSignal = signals.reshape(inputNodes)
+    testTarget = targets
+    result = model.query(testSignal)
+    # Check result
+    max_value = None
+    max_index = None
+    for idx, num in enumerate(result):
+        if (max_value is None or num > max_value):
+            max_value = num
+            max_idx = idx
+    print('value:', max_value, "index: ", max_idx, "target:", KerasTestLabels[index])
+
 
 
 
