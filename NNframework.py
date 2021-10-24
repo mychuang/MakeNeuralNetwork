@@ -109,20 +109,31 @@ print("Build Neural Network")
 inputNodes   = 784
 hiddenNodes  = 100
 outputNodes  = 10
-learningRate = 0.2
-trainScore = np.array([])
+learningRate = 0.1
+epochs       = 10
+performance  = np.array([])
+trainScore   = np.array([])
 model = neuralNetwork(inputNodes, hiddenNodes, outputNodes, learningRate)
 
 print(" == Training == ")
-for index in range(60000):
-    signal = trainSignals[index].reshape(inputNodes)
-    model.train(signal, trainTargets[index])
-    result = model.query(signal)
-    if(np.argmax(result) == np.argmax(trainTargets[index])):
-        trainScore = np.append(trainScore, 1)
-    else:
-        trainScore = np.append(trainScore, 0)
-print("Trainning Performance: ", trainScore.sum()/float(len(trainScore)))
+for times in range(epochs):
+    for index in range(60000):
+        signal = trainSignals[index].reshape(inputNodes)
+        model.train(signal, trainTargets[index])
+        result = model.query(signal)
+        if(np.argmax(result) == np.argmax(trainTargets[index])):
+            trainScore = np.append(trainScore, 1)
+        else:
+            trainScore = np.append(trainScore, 0)
+    performance = np.append(performance, trainScore.sum()/float(len(trainScore)))
+    print("Trainning Performance ", times, ": ", trainScore.sum()/float(len(trainScore)))
+    
+#%%
+import matplotlib.pyplot as plt
+fig = plt.figure(figsize=(8,6))
+plt.plot(performance)
+plt.title("Performance in 10 epochs")
+plt.show()
 
 #%% The loop for testing
 print(" == Testing ==")
